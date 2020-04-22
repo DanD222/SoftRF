@@ -1,6 +1,6 @@
 /*
  * EEPROMHelper.h
- * Copyright (C) 2016-2020 Linar Yusupov
+ * Copyright (C) 2016-2019 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@
 #include "SoftRF.h"
 
 #define SOFTRF_EEPROM_MAGIC 0xBABADEDA
-#define SOFTRF_EEPROM_VERSION 0x0000005D
+// # define SOFTRF_EEPROM_VERSION 0x0000005D
+#define SOFTRF_EEPROM_VERSION 0x0000005E
 
 typedef struct Settings {
     uint8_t  mode;
@@ -55,11 +56,8 @@ typedef struct Settings {
     uint8_t  json:2;
 
     uint8_t  power_save;
-    int8_t   freq_corr; /* +/-, kHz */
-    uint8_t  resvd23456;
-    uint8_t  resvd7;
-    uint8_t  resvd8;
-    uint8_t  resvd9;
+    uint32_t  aircraftID;
+    uint8_t  idType;
     uint8_t  resvd10;
     uint8_t  resvd11;
     uint8_t  resvd12;
