@@ -1,6 +1,6 @@
 /*
  * EEPROMHelper.cpp
- * Copyright (C) 2016-2020 Linar Yusupov
+ * Copyright (C) 2016-2019 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,6 @@ void EEPROM_setup()
     Serial.print(F("ERROR: Failed to initialize "));
     Serial.print(sizeof(eeprom_t));
     Serial.println(F(" bytes of EEPROM!"));
-    Serial.flush();
     delay(1000000);
   }
 
@@ -50,7 +49,7 @@ void EEPROM_setup()
   }
 
   if (eeprom_block.field.magic != SOFTRF_EEPROM_MAGIC) {
-    Serial.println(F("WARNING! User defined settings are not initialized yet. Loading defaults..."));
+    Serial.println(F("Warning! EEPROM magic mismatch! Loading defaults..."));
 
     EEPROM_defaults();
   } else {
@@ -58,7 +57,7 @@ void EEPROM_setup()
     Serial.println(eeprom_block.field.version);
 
     if (eeprom_block.field.version != SOFTRF_EEPROM_VERSION) {
-      Serial.println(F("WARNING! Version mismatch of user defined settings. Loading defaults..."));
+      Serial.println(F("Warning! EEPROM version mismatch! Loading defaults..."));
 
       EEPROM_defaults();
     }
@@ -91,20 +90,15 @@ void EEPROM_defaults()
   eeprom_block.field.settings.nmea_p     = false;
   eeprom_block.field.settings.nmea_l     = true;
   eeprom_block.field.settings.nmea_s     = true;
-
-#if defined(USBD_USE_CDC) && !defined(DISABLE_GENERIC_SERIALUSB)
-  eeprom_block.field.settings.nmea_out   = NMEA_BLUETOOTH;  /* STM32 USB */
-#else
   eeprom_block.field.settings.nmea_out   = NMEA_UART;
-#endif
-
   eeprom_block.field.settings.gdl90      = GDL90_OFF;
   eeprom_block.field.settings.d1090      = D1090_OFF;
   eeprom_block.field.settings.json       = JSON_OFF;
   eeprom_block.field.settings.stealth    = false;
   eeprom_block.field.settings.no_track   = false;
   eeprom_block.field.settings.power_save = POWER_SAVE_NONE;
-  eeprom_block.field.settings.freq_corr  = 0;
+  eeprom_block.field.settings.aircraftID = 0;
+  eeprom_block.field.settings.idType     = 0;
 }
 
 void EEPROM_store()
