@@ -1,6 +1,6 @@
 /*
  * SoftRF(.ino) firmware
- * Copyright (C) 2016-2020 Linar Yusupov
+ * Copyright (C) 2016-2019 Linar Yusupov
  *
  * Author: Linar Yusupov, linar.r.yusupov@gmail.com
  *
@@ -38,7 +38,7 @@
  *   EasyLink library is developed by Robert Wessels and Tony Cave
  *   Dump978 library is developed by Oliver Jowett
  *   FEC library is developed by Phil Karn
- *   AXP202X library is developed by Lewis He
+ *   AXP202X and S7XG libraries are developed by Lewis He
  *   Arduino Core for STM32 is developed by Frederic Pillon
  *   TFT library is developed by Bodmer
  *
@@ -74,6 +74,8 @@
 #include "BaroHelper.h"
 #include "TTNHelper.h"
 #include "TrafficHelper.h"
+
+#include "Protocol_Legacy.h"
 
 #include "SoftRF.h"
 
@@ -124,17 +126,26 @@ void setup()
   Serial.print(SoC->name);
   Serial.print(F(" FW.REV: " SOFTRF_FIRMWARE_VERSION " DEV.ID: "));
   Serial.println(String(SoC->getChipId(), HEX));
-  Serial.println(F("Copyright (C) 2015-2020 Linar Yusupov. All rights reserved."));
   Serial.flush();
 
   Serial.println(""); Serial.print(F("Reset reason: ")); Serial.println(resetInfo->reason);
   Serial.println(SoC->getResetReason());
   Serial.print(F("Free heap size: ")); Serial.println(ESP.getFreeHeap());
+#if defined(ESP32_DEVEL_CORE)
+  Serial.print(F("PSRAM: ")); Serial.println(psramFound() ? F("found") : F("not found"));
+#endif
   Serial.println(SoC->getResetInfo()); Serial.println("");
 
   EEPROM_setup();
 
-  ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
+  if (settings->aircraftID == 0) {
+    ThisAircraft.addr = SoC->getChipId() & 0x00FFFFFF;
+    ThisAircraft.addr_type = ADDR_TYPE_RANDOM;
+  } else {	
+    ThisAircraft.addr = settings->aircraftID;
+    ThisAircraft.addr_type = settings->idType;
+//    ThisAircraft.addr_type = ADDR_TYPE_ICAO;
+  }
 
   hw_info.rf = RF_setup();
 
