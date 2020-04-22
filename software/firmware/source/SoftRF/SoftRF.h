@@ -1,6 +1,6 @@
 /*
  * SoftRF.h
- * Copyright (C) 2016-2020 Linar Yusupov
+ * Copyright (C) 2016-2019 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,8 +31,11 @@
 #include <raspi/raspi.h>
 #endif /* RASPBERRY_PI */
 
-#define SOFTRF_FIRMWARE_VERSION "1.0-rc7"
+#define SOFTRF_FIRMWARE_VERSION "1.0-rc7.1"
 #define SOFTRF_IDENT            "SoftRF-"
+
+// ICAO ID
+// #define SOFTRF_ADDRESS 0x003D076A
 
 #define ENTRY_EXPIRATION_TIME   10 /* seconds */
 #define LED_EXPIRATION_TIME     5 /* seconds */
@@ -83,7 +86,7 @@
 #if !defined(SERIAL_IN_BITS)
 #define SERIAL_IN_BITS    SERIAL_8N1
 #endif
-
+#if !defined(SERIAL_OUT_BR)
 /*
  * 38400 is known as maximum baud rate
  * that HC-05 Bluetooth module
@@ -91,14 +94,10 @@
  *
  * Applicable for Standalone Edition. Inherited by most of other SoftRF platforms.
  */
-#define STD_OUT_BR        38400
-#define STD_OUT_BITS      SERIAL_8N1
-
-#if !defined(SERIAL_OUT_BR)
-#define SERIAL_OUT_BR     STD_OUT_BR
+#define SERIAL_OUT_BR     38400
 #endif
 #if !defined(SERIAL_OUT_BITS)
-#define SERIAL_OUT_BITS   STD_OUT_BITS
+#define SERIAL_OUT_BITS   SERIAL_8N1
 #endif
 
 #define UAT_BOOT_BR       9600
