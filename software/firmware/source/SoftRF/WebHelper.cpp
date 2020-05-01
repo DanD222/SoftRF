@@ -1,6 +1,6 @@
 /*
  * WebHelper.cpp
- * Copyright (C) 2016-2020 Linar Yusupov
+ * Copyright (C) 2016-2019 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,17 +109,17 @@ static const char about_html[] PROGMEM = "<html>\
 <tr><th align=left>Robert Wessels and Tony Cave</th><td align=left>EasyLink library</td></tr>\
 <tr><th align=left>Oliver Jowett</th><td align=left>Dump978 library</td></tr>\
 <tr><th align=left>Phil Karn</th><td align=left>FEC library</td></tr>\
-<tr><th align=left>Lewis He</th><td align=left>AXP20X library</td></tr>\
+<tr><th align=left>Lewis He</th><td align=left>AXP20X and S7XG libraries</td></tr>\
 <tr><th align=left>Bodmer</th><td align=left>TFT library</td></tr>\
 </table>\
 <hr>\
-Copyright (C) 2015-2020 &nbsp;&nbsp;&nbsp; Linar Yusupov\
+Copyright (C) 2015-2019 &nbsp;&nbsp;&nbsp; Linar Yusupov\
 </body>\
 </html>";
 
 void handleSettings() {
 
-  size_t size = 4860;
+  size_t size = 5000;
   char *offset;
   size_t len = 0;
   char *Settings_temp = (char *) malloc(size);
@@ -163,8 +163,8 @@ void handleSettings() {
   offset += len;
   size -= len;
 
-  /* Radio specific part 1 */
-  if (hw_info.rf == RF_IC_SX1276 || hw_info.rf == RF_IC_SX1262) {
+  /* Radio specific part */
+  if (hw_info.rf == RF_IC_SX1276) {
     snprintf_P ( offset, size,
       PSTR("\
 <tr>\
@@ -236,7 +236,6 @@ void handleSettings() {
 <option %s value='%d'>Hangglider</option>\
 <option %s value='%d'>Paraglider</option>\
 <option %s value='%d'>Balloon</option>\
-<option %s value='%d'>Static</option>\
 </select>\
 </td>\
 </tr>\
@@ -297,7 +296,6 @@ void handleSettings() {
   (settings->aircraft_type == AIRCRAFT_TYPE_HANGGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_HANGGLIDER,
   (settings->aircraft_type == AIRCRAFT_TYPE_PARAGLIDER ? "selected" : ""),  AIRCRAFT_TYPE_PARAGLIDER,
   (settings->aircraft_type == AIRCRAFT_TYPE_BALLOON ? "selected" : ""),  AIRCRAFT_TYPE_BALLOON,
-  (settings->aircraft_type == AIRCRAFT_TYPE_STATIC ? "selected" : ""),  AIRCRAFT_TYPE_STATIC,
   (settings->alarm == TRAFFIC_ALARM_NONE ? "selected" : ""),  TRAFFIC_ALARM_NONE,
   (settings->alarm == TRAFFIC_ALARM_DISTANCE ? "selected" : ""),  TRAFFIC_ALARM_DISTANCE,
   (settings->alarm == TRAFFIC_ALARM_VECTOR ? "selected" : ""),  TRAFFIC_ALARM_VECTOR,
@@ -499,42 +497,23 @@ void handleSettings() {
 <input type='radio' name='no_track' value='0' %s>Off\
 <input type='radio' name='no_track' value='1' %s>On\
 </td>\
-</tr>"),
-  (settings->power_save == POWER_SAVE_NONE ? "selected" : ""), POWER_SAVE_NONE,
-  (settings->power_save == POWER_SAVE_WIFI ? "selected" : ""), POWER_SAVE_WIFI,
-  (!settings->stealth ? "checked" : "") , (settings->stealth ? "checked" : ""),
-  (!settings->no_track ? "checked" : "") , (settings->no_track ? "checked" : "")
-  );
-
-  len = strlen(offset);
-  offset += len;
-  size -= len;
-
-  /* Radio specific part 2 */
-  if (rf_chip && rf_chip->type == RF_IC_SX1276) {
-    snprintf_P ( offset, size,
-      PSTR("\
-<tr>\
-<th align=left>Radio CF correction (&#177;, kHz)</th>\
+</tr>\
+<th align=left>Mirror LED ring</th>\
 <td align=right>\
-<INPUT type='number' name='rfc' min='-30' max='30' value='%d'>\
+<input type='radio' name='mirror_led' value='0' %s>Off\
+<input type='radio' name='mirror_led' value='1' %s>On\
 </td>\
-</tr>"),
-    settings->freq_corr);
-
-    len = strlen(offset);
-    offset += len;
-    size -= len;
-  }
-
-  /* Common part 7 */
-  snprintf_P ( offset, size,
-    PSTR("\
+</tr>\
 </table>\
 <p align=center><INPUT type='submit' value='Save and restart'></p>\
 </form>\
 </body>\
-</html>")
+</html>"),
+  (settings->power_save == POWER_SAVE_NONE ? "selected" : ""), POWER_SAVE_NONE,
+  (settings->power_save == POWER_SAVE_WIFI ? "selected" : ""), POWER_SAVE_WIFI,
+  (!settings->stealth ? "checked" : "") , (settings->stealth ? "checked" : ""),
+  (!settings->no_track ? "checked" : "") , (settings->no_track ? "checked" : ""),
+  (!settings->mirror_led ? "checked" : "") , (settings->mirror_led ? "checked" : "")
   );
 
   SoC->swSer_enableRx(false);
@@ -655,7 +634,7 @@ void handleRoot() {
 
 void handleInput() {
 
-  char *Input_temp = (char *) malloc(1600);
+  char *Input_temp = (char *) malloc(1700);
   if (Input_temp == NULL) {
     return;
   }
@@ -697,13 +676,13 @@ void handleInput() {
       settings->stealth = server.arg(i).toInt();
     } else if (server.argName(i).equals("no_track")) {
       settings->no_track = server.arg(i).toInt();
+    } else if (server.argName(i).equals("mirror_led")) {
+      settings->mirror_led = server.arg(i).toInt();
     } else if (server.argName(i).equals("power_save")) {
       settings->power_save = server.arg(i).toInt();
-    } else if (server.argName(i).equals("rfc")) {
-      settings->freq_corr = server.arg(i).toInt();
     }
   }
-  snprintf_P ( Input_temp, 1600,
+  snprintf_P ( Input_temp, 1520,
 PSTR("<html>\
 <head>\
 <meta http-equiv='refresh' content='15; url=/'>\
@@ -731,8 +710,8 @@ PSTR("<html>\
 <tr><th align=left>DUMP1090</th><td align=right>%d</td></tr>\
 <tr><th align=left>Stealth</th><td align=right>%s</td></tr>\
 <tr><th align=left>No track</th><td align=right>%s</td></tr>\
+<tr><th align=left>Mirror LED ring</th><td align=right>%s</td></tr>\
 <tr><th align=left>Power save</th><td align=right>%d</td></tr>\
-<tr><th align=left>Freq. correction</th><td align=right>%d</td></tr>\
 </table>\
 <hr>\
   <p align=center><h1 align=center>Restart is in progress... Please, wait!</h1></p>\
@@ -745,7 +724,8 @@ PSTR("<html>\
   BOOL_STR(settings->nmea_l), BOOL_STR(settings->nmea_s),
   settings->nmea_out, settings->gdl90, settings->d1090,
   BOOL_STR(settings->stealth), BOOL_STR(settings->no_track),
-  settings->power_save, settings->freq_corr
+  BOOL_STR(settings->mirror_led),
+  settings->power_save
   );
   SoC->swSer_enableRx(false);
   server.send ( 200, "text/html", Input_temp );
