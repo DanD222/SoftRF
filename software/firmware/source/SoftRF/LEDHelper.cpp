@@ -50,8 +50,18 @@ void LED_setup() {
 
 // Fill the dots one after the other with a color
 static void colorWipe(color_t c, uint8_t wait) {
-  for (uint16_t i = 0; i < uni_numPixels(); i++) {
-    uni_setPixelColor(i, c);
+   for (uint16_t i = 0; i < uni_numPixels(); i++) {
+      if (settings->mirror_led == true){
+        if (i == 0) {
+          uni_setPixelColor(i, c);
+        }
+        else {
+          uni_setPixelColor(RING_LED_NUM - i, c);
+        }
+      }
+      else {
+        uni_setPixelColor(i, c);
+      }
     uni_show();
     delay(wait);
   }
@@ -78,9 +88,9 @@ static void theaterChase(color_t c, uint8_t wait) {
 void LED_test() {
   if (SOC_GPIO_PIN_LED != SOC_UNUSED_PIN && settings->pointer != LED_OFF) {
     // Some example procedures showing how to display to the pixels:
-    colorWipe(uni_Color(255, 0, 0), 50); // Red
-    colorWipe(uni_Color(0, 255, 0), 50); // Green
-    colorWipe(uni_Color(0, 0, 255), 50); // Blue
+    colorWipe(uni_Color(255, 0, 0), 80); // Red
+    colorWipe(uni_Color(0, 255, 0), 80); // Green
+    colorWipe(uni_Color(0, 0, 255), 80); // Blue
     // Send a theater pixel chase in...
     theaterChase(uni_Color(127, 127, 127), 50); // White
     theaterChase(uni_Color(127, 0, 0), 50); // Red
@@ -170,6 +180,11 @@ void LED_DisplayTraffic() {
             color =  LED_COLOR_YELLOW;
           } else if (distance > LED_DISTANCE_NEAR && distance <= LED_DISTANCE_FAR) {
             color =  LED_COLOR_BLUE;
+          }
+          if (settings->mirror_led == true){
+            if (led_num != 0){
+              led_num = RING_LED_NUM - led_num;  //mirror LED direction
+            }
           }
           uni_setPixelColor(led_num, color);
         }
