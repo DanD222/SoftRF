@@ -1,6 +1,6 @@
 /*
  * EEPROMHelper.h
- * Copyright (C) 2016-2020 Linar Yusupov
+ * Copyright (C) 2016-2019 Linar Yusupov
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,14 +49,15 @@ typedef struct Settings {
     uint8_t  alarm:3;
     bool     stealth:1;
     bool     no_track:1;
+    bool     mirror_led:1;
 
     uint8_t  gdl90:3;
     uint8_t  d1090:3;
     uint8_t  json:2;
 
     uint8_t  power_save;
-    int8_t   freq_corr; /* +/-, kHz */
-    uint8_t  resvd23456;
+    uint8_t  resvd2345;
+    uint8_t  resvd6;
     uint8_t  resvd7;
     uint8_t  resvd8;
     uint8_t  resvd9;
